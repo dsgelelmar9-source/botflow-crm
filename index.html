@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BotFlow — CRM</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef1f5;color:#172033;overflow:hidden}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{height:100vh;display:flex;flex-direction:column}
+.topbar{height:60px;display:flex;align-items:center;padding:0 22px;background:#111827;color:#fff;gap:15px}
+.brand{font-weight:800}.brand span{font-weight:400;opacity:.62}
+.status{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700}.status-dot{width:9px;height:9px;border-radius:50%;background:#eab308}
+.main{flex:1;min-height:0;display:flex;gap:16px;padding:18px;max-width:1550px;width:100%;margin:auto}
+.sidebar{width:245px;background:#fff;border-radius:14px;padding:18px;box-shadow:0 5px 22px #00000012;display:flex;flex-direction:column;min-height:0}
+.sidebar h2{font-size:16px;margin:0 0 16px}
+.nav-btn{width:100%;text-align:left;border:0;background:#f3f4f6;color:#172033;padding:11px 12px;border-radius:9px;font-weight:700;font-size:13px;margin-bottom:7px}.nav-btn:hover{background:#e5e7eb}.nav-btn.active{background:#111827;color:#fff}
+.side-note{font-size:11px;color:#6b7280;line-height:1.5;margin:12px 2px}.side-spacer{flex:1}
+.refresh,.reset-all{width:100%;border-radius:10px;padding:11px;font-weight:700}
+.refresh{border:0;background:#2563eb;color:#fff}.refresh:hover{background:#1d4ed8}
+.reset-all{margin-top:8px;border:1px solid #fecaca;background:#fff1f2;color:#b91c1c}.reset-all:hover{background:#fee2e2}.reset-all:active{transform:translateY(1px);background:#fecaca}
+.content{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.page{display:none;min-height:0;flex:1;flex-direction:column}.page.active{display:flex}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}.head h1{font-size:23px;margin:0}.head p{margin:4px 0 0;font-size:12px;color:#6b7280}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.filters input,.filters select{border:1px solid #d1d5db;background:#fff;border-radius:9px;padding:9px 10px;outline:none}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}.metric{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px;box-shadow:0 3px 12px #00000008}.metric span{display:block;color:#6b7280;font-size:11px}.metric strong{display:block;font-size:23px;margin-top:3px}
+.card{background:#fff;border-radius:14px;box-shadow:0 5px 22px #00000012;overflow:hidden;min-height:0;flex:1;display:flex;flex-direction:column}
+.table-wrap{overflow:auto;min-height:0;flex:1}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:11px 10px;text-align:left;border-bottom:1px solid #e5e7eb;white-space:nowrap}th{background:#f9fafb;position:sticky;top:0;z-index:1;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}tbody tr{cursor:pointer}tbody tr:hover{background:#f8fafc}tbody tr.selected{background:#eff6ff}
+.level-pill,.lead-pill{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:10px}.l1{background:#fee2e2;color:#991b1b}.l2{background:#fef3c7;color:#92400e}.l3{background:#ffedd5;color:#9a3412}.l4{background:#dcfce7;color:#166534}
+.lead-new{background:#dbeafe;color:#1d4ed8}.lead-nurture{background:#fef3c7;color:#92400e}.lead-advanced{background:#dcfce7;color:#166534}.lead-closed{background:#e5e7eb;color:#374151}
+.empty{text-align:center;color:#9ca3af;padding:35px}.grid-two{display:grid;grid-template-columns:1fr 1.05fr;gap:14px;min-height:0;flex:1}.panel{background:#fff;border-radius:14px;box-shadow:0 5px 22px #00000012;overflow:hidden;min-height:0;display:flex;flex-direction:column}.panel-head{padding:14px 16px;border-bottom:1px solid #e5e7eb}.panel-head h2{font-size:15px;margin:0}.panel-head p{font-size:11px;color:#6b7280;margin:3px 0 0}.contact-list{overflow:auto;min-height:0}.contact{display:flex;gap:11px;padding:13px 14px;border-bottom:1px solid #eef2f7;cursor:pointer}.contact:hover{background:#f8fafc}.contact.selected{background:#eff6ff}.avatar{width:38px;height:38px;border-radius:50%;background:#111827;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:0 0 auto}.contact-main{min-width:0;flex:1}.contact-top{display:flex;justify-content:space-between;gap:8px}.contact-name{font-weight:800;font-size:13px}.contact-time{font-size:10px;color:#9ca3af}.contact-preview{font-size:11px;color:#6b7280;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.channel{font-size:10px;margin-top:6px;color:#4b5563}
+.chat{flex:1;min-height:0;overflow:auto;padding:18px;background:#f8fafc}.msg-row{display:flex;margin:0 0 12px}.msg-row.in{justify-content:flex-start}.msg-row.out{justify-content:flex-end}.bubble-wrap{max-width:78%}.bubble{padding:10px 12px;border-radius:13px;line-height:1.4;font-size:12px;white-space:pre-wrap;word-break:break-word}.in .bubble{background:#fff;border:1px solid #e5e7eb;border-top-left-radius:4px}.out .bubble{background:#2563eb;color:#fff;border-top-right-radius:4px}.msg-meta{font-size:9px;color:#9ca3af;margin-top:3px}.out .msg-meta{text-align:right}
+.chat-summary{border-top:1px solid #e5e7eb;padding:12px;background:#fff;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.mini{border:1px solid #e5e7eb;border-radius:8px;padding:7px}.mini span{display:block;color:#6b7280;font-size:9px}.mini b{display:block;font-size:11px;margin-top:2px}
+.detail{background:#fff;border-radius:14px;padding:15px;box-shadow:0 5px 22px #00000012;overflow:auto}.detail h2{font-size:17px;margin:0 0 4px}.detail-sub{font-size:11px;color:#6b7280;margin-bottom:14px}.detail-section{border:1px solid #e5e7eb;border-radius:10px;padding:11px;margin-top:10px}.detail-title{text-transform:uppercase;letter-spacing:.07em;font-size:10px;font-weight:800;color:#6b7280;margin-bottom:7px}.row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:11px}.row:last-child{border-bottom:0}.row span{color:#6b7280}.row b{text-align:right;word-break:break-word}.schema{margin-top:10px;font-size:10px;color:#6b7280;line-height:1.5}
+.lead-info{padding:14px}.lead-info h2{font-size:17px;margin:0 0 5px}.lead-info p{font-size:11px;line-height:1.5;color:#6b7280;margin:0 0 9px}.lead-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.lead-step{border:1px solid #e5e7eb;border-radius:9px;padding:9px}.lead-step b{font-size:11px;display:block}.lead-step span{font-size:10px;color:#6b7280;display:block;margin-top:3px}
+@media(max-width:1200px){.sidebar{width:205px}.metrics{grid-template-columns:repeat(3,1fr)}.grid-two{grid-template-columns:1fr}.detail-right{display:none}}
+@media(max-width:820px){.sidebar{display:none}.main{padding:9px}.metrics{grid-template-columns:repeat(2,1fr)}.lead-flow{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand">BotFlow <span>— CRM / Banco de información</span></div>
+  <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Modo local</span></div>
+</header>
+<main class="main">
+<aside class="sidebar">
+  <h2>Módulo CRM</h2>
+  <button class="nav-btn active" data-page="bank">Banco de información</button>
+  <button class="nav-btn" data-page="conversations">Conversaciones</button>
+  <button class="nav-btn" data-page="leads">Leads</button>
+  <div class="side-note">
+    El chat real estará en Messenger/WhatsApp. Este CRM recibe lo que el Bot Engine identifica y organiza.
+    <br><br><b>Conversaciones:</b> historial completo por persona.<br>
+    <b>Leads:</b> personas que han demostrado interés comercial.
+  </div>
+  <div class="side-spacer"></div>
+  <button class="refresh" id="refresh">Actualizar banco</button>
+  <button class="reset-all" id="resetAll" type="button">Resetear todo</button>
+</aside>
+
+<section class="content">
+  <!-- BANCO -->
+  <section class="page active" id="page-bank">
+    <div class="head"><div><h1>Banco de información recogida</h1><p>Estado estructurado de cada usuario que conversa con el bot.</p></div>
+      <div class="filters"><input id="bankSearch" placeholder="Buscar cliente, producto o ID"><select id="bankLevel"><option value="all">Todos los niveles</option><option value="1">Nivel 1</option><option value="2">Nivel 2</option><option value="3">Nivel 3</option><option value="4">Nivel 4</option></select></div></div>
+    <div class="metrics">
+      <div class="metric"><span>Total conversaciones</span><strong id="mTotal">0</strong></div>
+      <div class="metric"><span>Usuarios únicos</span><strong id="mUnique">0</strong></div>
+      <div class="metric"><span>Nivel 1</span><strong id="m1">0</strong></div>
+      <div class="metric"><span>Nivel 2 / 3</span><strong id="m23">0</strong></div>
+      <div class="metric"><span>Nivel 4</span><strong id="m4">0</strong></div>
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Plataforma</th><th>Nivel</th><th>Categoría</th><th>Producto</th><th>Plan</th><th>Monto</th><th>Mensajes</th><th>Última interacción</th></tr></thead><tbody id="bankRows"></tbody></table></div></div>
+  </section>
+
+  <!-- CONVERSACIONES -->
+  <section class="page" id="page-conversations">
+    <div class="head"><div><h1>Conversaciones</h1><p>El historial completo que llega desde Messenger o WhatsApp, organizado por cliente.</p></div>
+      <div class="filters"><input id="conversationSearch" placeholder="Buscar David, Alejandra, mensaje..."></div></div>
+    <div class="grid-two">
+      <div class="panel">
+        <div class="panel-head"><h2>Clientes con conversación</h2><p>Haz clic en una persona para abrir su chat completo.</p></div>
+        <div class="contact-list" id="contactList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2 id="chatTitle">Selecciona una conversación</h2><p id="chatSub">Aquí aparecerá el historial completo.</p></div>
+        <div class="chat" id="chatMessages"></div>
+        <div class="chat-summary">
+          <div class="mini"><span>Nivel</span><b id="chatLevel">—</b></div>
+          <div class="mini"><span>Producto</span><b id="chatProduct">—</b></div>
+          <div class="mini"><span>Monto</span><b id="chatAmount">—</b></div>
+          <div class="mini"><span>Mensajes</span><b id="chatCount">—</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADS -->
+  <section class="page" id="page-leads">
+    <div class="head"><div><h1>Leads</h1><p>Personas que han mostrado intención o interés comercial y requieren seguimiento.</p></div>
+      <div class="filters"><select id="leadFilter"><option value="all">Todos</option><option value="nuevo">Nuevos</option><option value="seguimiento">En seguimiento</option><option value="avanzado">Lead avanzado</option><option value="cerrado">Cerrado</option></select></div></div>
+    <div class="panel lead-info" style="flex:0 0 auto">
+      <h2>¿Para qué sirve un Lead?</h2>
+      <p>Un lead es una persona que ha mostrado interés comercial. No es automáticamente un cliente ni significa que haya pagado. El módulo sirve para priorizar seguimiento, saber qué producto pidió y conocer en qué etapa quedó.</p>
+      <div class="lead-flow">
+        <div class="lead-step"><b>Nuevo</b><span>Entró y comenzó a preguntar.</span></div>
+        <div class="lead-step"><b>Seguimiento</b><span>Ya mostró interés por un producto.</span></div>
+        <div class="lead-step"><b>Avanzado</b><span>Llegó a Nivel 4 / etapa de pago.</span></div>
+        <div class="lead-step"><b>Cerrado</b><span>Estado comercial confirmado por el sistema de producción.</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Plataforma</th><th>Estado del lead</th><th>Nivel</th><th>Producto</th><th>Monto</th><th>Última interacción</th><th>Acción</th></tr></thead><tbody id="leadRows"></tbody></table></div></div>
+  </section>
+</section>
+
+<aside class="detail detail-right">
+  <h2>Ficha del cliente</h2><div class="detail-sub">Selecciona una persona en Banco, Conversaciones o Leads.</div>
+  <div class="detail-section"><div class="detail-title">Identificación</div><div class="row"><span>ID usuario</span><b id="dId">—</b></div><div class="row"><span>Nombre</span><b id="dName">—</b></div><div class="row"><span>Plataforma</span><b id="dPlatform">—</b></div></div>
+  <div class="detail-section"><div class="detail-title">Estado comercial</div><div class="row"><span>Nivel</span><b id="dLevel">—</b></div><div class="row"><span>Categoría</span><b id="dCategory">—</b></div><div class="row"><span>Producto</span><b id="dProduct">—</b></div><div class="row"><span>Plan</span><b id="dPlan">—</b></div><div class="row"><span>Monto estimado</span><b id="dAmount">—</b></div></div>
+  <div class="detail-section"><div class="detail-title">Actividad</div><div class="row"><span>Fecha inicio</span><b id="dStart">—</b></div><div class="row"><span>Última interacción</span><b id="dLast">—</b></div><div class="row"><span>Mensajes</span><b id="dMessages">—</b></div></div>
+  <div class="detail-section"><div class="detail-title">Último evento</div><div class="row"><span>Evento</span><b id="dEvent">—</b></div></div>
+  <div class="schema"><b>Producción:</b> este panel leerá la colección <code>conversaciones</code> mediante el backend. El token de Meta nunca se guarda en este HTML.</div>
+</aside>
+</main>
+</div>
+
+<script>
+"use strict";
+
+const STORAGE_KEY="botflow_conversaciones_v3";
+const RESET_KEY="BOTFLOW_EMPTY_AFTER_RESET";
+const API_URL=""; // Producción: https://api.tudominio.com
+let records=[];
+let selectedId=null;
+
+const $=id=>document.getElementById(id);
+const els={
+  statusText:$('statusText'),statusDot:$('statusDot'),refresh:$('refresh'),resetAll:$('resetAll'),
+  bankRows:$('bankRows'),bankSearch:$('bankSearch'),bankLevel:$('bankLevel'),
+  mTotal:$('mTotal'),mUnique:$('mUnique'),m1:$('m1'),m23:$('m23'),m4:$('m4'),
+  contactList:$('contactList'),conversationSearch:$('conversationSearch'),chatTitle:$('chatTitle'),chatSub:$('chatSub'),chatMessages:$('chatMessages'),chatLevel:$('chatLevel'),chatProduct:$('chatProduct'),chatAmount:$('chatAmount'),chatCount:$('chatCount'),
+  leadFilter:$('leadFilter'),leadRows:$('leadRows'),
+  dId:$('dId'),dName:$('dName'),dPlatform:$('dPlatform'),dLevel:$('dLevel'),dCategory:$('dCategory'),dProduct:$('dProduct'),dPlan:$('dPlan'),dAmount:$('dAmount'),dStart:$('dStart'),dLast:$('dLast'),dMessages:$('dMessages'),dEvent:$('dEvent')
+};
+
+function money(n){return n===null||n===undefined||n===""?"—":"$"+Number(n).toLocaleString("es-CO")}
+function fmtDate(v){if(!v)return "—";const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"})}
+function timeOnly(v){if(!v)return "";const d=new Date(v);return Number.isNaN(d.getTime())?"":d.toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"})}
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function levelLabel(level){return({1:"Nivel 1 — Inicio",2:"Nivel 2 — Explorando",3:"Nivel 3 — Plan",4:"Nivel 4 — Esperando pago"}[Number(level)]||"Nivel "+level)}
+function initials(name){return String(name||"?").split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()}
+
+function demoRecords(){
+ const base=Date.now();
+ return [
+  {id_usuario:"demo-david",nombre:"David",plataforma:"Facebook Messenger",nivel_actual:4,categoria:"Entretenimiento",plataforma_interes:"Netflix",plan:"4K",monto_estimado:15000,fecha_inicio:new Date(base-35*600000).toISOString(),ultima_interaccion:new Date(base-2*60000).toISOString(),total_mensajes:6,ultimo_evento:"David seleccionó Netflix 4K y llegó a la etapa de pago.",lead_estado:"avanzado",historial:[
+   {tipo:"usuario",mensaje:"Hola, que servicios tienen?",fecha:new Date(base-35*600000).toISOString()},
+   {tipo:"bot",mensaje:"👋 ¡Hola! Tenemos Entretenimiento, Juegos y Música. ¿Cuál buscas?",fecha:new Date(base-34*600000).toISOString()},
+   {tipo:"usuario",mensaje:"1",fecha:new Date(base-32*600000).toISOString()},
+   {tipo:"bot",mensaje:"¡Listo! Elegiste Entretenimiento 🎬. ¿Cuál te interesa? 1 Netflix 2 HBO 3 Amazon 4 Disney",fecha:new Date(base-31*600000).toISOString()},
+   {tipo:"usuario",mensaje:"netflix",fecha:new Date(base-4*60000).toISOString()},
+   {tipo:"usuario",mensaje:"4K",fecha:new Date(base-3*60000).toISOString()},
+   {tipo:"bot",mensaje:"¡Perfecto! Elegiste Netflix 4K — $15.000. ¿Prefieres Nequi, Daviplata o Banco?",fecha:new Date(base-2*60000).toISOString()}
+  ]},
+  {id_usuario:"demo-alejandra",nombre:"Alejandra",plataforma:"WhatsApp",nivel_actual:2,categoria:"Juegos",plataforma_interes:"Juegos",plan:null,monto_estimado:null,fecha_inicio:new Date(base-90*600000).toISOString(),ultima_interaccion:new Date(base-18*60000).toISOString(),total_mensajes:4,ultimo_evento:"Alejandra entró a Juegos y está explorando opciones.",lead_estado:"seguimiento",historial:[
+   {tipo:"usuario",mensaje:"Hola",fecha:new Date(base-90*600000).toISOString()},
+   {tipo:"bot",mensaje:"👋 ¡Hola! ¿Buscas Entretenimiento, Juegos o Música?",fecha:new Date(base-89*600000).toISOString()},
+   {tipo:"usuario",mensaje:"juegos",fecha:new Date(base-20*60000).toISOString()},
+   {tipo:"bot",mensaje:"¡Listo! Elegiste Juegos 🎮. Tenemos Diamantes Free Fire, GTA 5, EA FC y Minecraft.",fecha:new Date(base-18*60000).toISOString()}
+  ]},
+  {id_usuario:"demo-sofi",nombre:"Sofi",plataforma:"Facebook Messenger",nivel_actual:1,categoria:null,plataforma_interes:null,plan:null,monto_estimado:null,fecha_inicio:new Date(base-150*600000).toISOString(),ultima_interaccion:new Date(base-120*60000).toISOString(),total_mensajes:1,ultimo_evento:"Sofi inició la conversación.",lead_estado:"nuevo",historial:[
+   {tipo:"usuario",mensaje:"Hola",fecha:new Date(base-150*600000).toISOString()},
+   {tipo:"bot",mensaje:"👋 ¡Hola! Sí, tenemos varias opciones digitales desde $10.000. ¿Cuál buscas?",fecha:new Date(base-149*600000).toISOString()}
+  ]}
+ ];
+}
+function localLoad(){try{const v=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");return Array.isArray(v)?v:[]}catch(e){return[]}}
+function localSave(v){localStorage.setItem(STORAGE_KEY,JSON.stringify(v))}
+
+async function loadRecords(){
+ if(!API_URL){
+  const saved=localLoad();
+  els.statusText.textContent = saved.length ? "Modo local" : "Banco vacío";
+  els.statusDot.style.background = saved.length ? "#eab308" : "#ef4444";
+  return saved;
+ }
+ const res=await fetch(API_URL+"/api/conversaciones",{headers:{Accept:"application/json"}});
+ if(!res.ok)throw new Error("No se pudo consultar el banco");
+ const data=await res.json();
+ els.statusText.textContent="Backend conectado";
+ els.statusDot.style.background="#22c55e";
+ return Array.isArray(data)?data:data.data||[];
+}
+
+function showDetail(r){
+ if(!r){[els.dId,els.dName,els.dPlatform,els.dLevel,els.dCategory,els.dProduct,els.dPlan,els.dAmount,els.dStart,els.dLast,els.dMessages,els.dEvent].forEach(x=>x.textContent="—");return}
+ els.dId.textContent=r.id_usuario||"—";els.dName.textContent=r.nombre||"—";els.dPlatform.textContent=r.plataforma||"—";els.dLevel.textContent=levelLabel(r.nivel_actual);els.dCategory.textContent=r.categoria||"—";els.dProduct.textContent=r.plataforma_interes||"—";els.dPlan.textContent=r.plan||"—";els.dAmount.textContent=money(r.monto_estimado);els.dStart.textContent=fmtDate(r.fecha_inicio);els.dLast.textContent=fmtDate(r.ultima_interaccion);els.dMessages.textContent=Number(r.total_mensajes||(Array.isArray(r.historial)?r.historial.length:0));els.dEvent.textContent=r.ultimo_evento||"—";
+}
+
+function renderBank(){
+ const q=els.bankSearch.value.trim().toLowerCase(),lf=els.bankLevel.value;
+ const list=records.filter(r=>{const text=[r.nombre,r.id_usuario,r.plataforma,r.categoria,r.plataforma_interes,r.plan,r.ultimo_evento].join(" ").toLowerCase();return(lf==="all"||String(r.nivel_actual)===lf)&&(!q||text.includes(q))});
+ els.mTotal.textContent=records.length;els.mUnique.textContent=new Set(records.map(r=>r.id_usuario)).size;els.m1.textContent=records.filter(r=>Number(r.nivel_actual)===1).length;els.m23.textContent=records.filter(r=>[2,3].includes(Number(r.nivel_actual))).length;els.m4.textContent=records.filter(r=>Number(r.nivel_actual)===4).length;
+ if(!list.length){els.bankRows.innerHTML='<tr><td colspan="9" class="empty">No hay registros que coincidan con el filtro.</td></tr>';return}
+ els.bankRows.innerHTML=list.map(r=>`<tr class="${selectedId===r.id_usuario?"selected":""}" data-id="${escapeHtml(r.id_usuario)}"><td><b>${escapeHtml(r.nombre||"Sin nombre")}</b></td><td>${escapeHtml(r.plataforma||"—")}</td><td><span class="level-pill l${Number(r.nivel_actual)}">${escapeHtml(levelLabel(r.nivel_actual))}</span></td><td>${escapeHtml(r.categoria||"—")}</td><td>${escapeHtml(r.plataforma_interes||"—")}</td><td>${escapeHtml(r.plan||"—")}</td><td>${money(r.monto_estimado)}</td><td>${Number(r.total_mensajes||(Array.isArray(r.historial)?r.historial.length:0))}</td><td>${escapeHtml(fmtDate(r.ultima_interaccion))}</td></tr>`).join("");
+ els.bankRows.querySelectorAll("tr[data-id]").forEach(tr=>tr.onclick=()=>{selectedId=tr.dataset.id;showDetail(records.find(r=>r.id_usuario===selectedId));renderBank()});
+}
+
+function renderConversations(){
+ const q=els.conversationSearch.value.trim().toLowerCase();
+ const list=records.filter(r=>{const hist=(r.historial||[]).map(m=>m.mensaje).join(" ");return !q||[r.nombre,r.plataforma,r.id_usuario,hist].join(" ").toLowerCase().includes(q)});
+ if(!list.length){els.contactList.innerHTML='<div class="empty">No hay conversaciones.</div>';return}
+ els.contactList.innerHTML=list.map(r=>{const last=(r.historial||[]).filter(Boolean).slice(-1)[0];const preview=last?last.mensaje:(r.ultimo_evento||"");return `<div class="contact ${selectedId===r.id_usuario?"selected":""}" data-id="${escapeHtml(r.id_usuario)}"><div class="avatar">${escapeHtml(initials(r.nombre))}</div><div class="contact-main"><div class="contact-top"><div class="contact-name">${escapeHtml(r.nombre||"Sin nombre")}</div><div class="contact-time">${escapeHtml(timeOnly(r.ultima_interaccion))}</div></div><div class="contact-preview">${escapeHtml(preview)}</div><div class="channel">${escapeHtml(r.plataforma||"")} · ${escapeHtml(levelLabel(r.nivel_actual))}</div></div></div>`}).join("");
+ els.contactList.querySelectorAll(".contact[data-id]").forEach(el=>el.onclick=()=>{selectedId=el.dataset.id;showConversation(records.find(r=>r.id_usuario===selectedId));showDetail(records.find(r=>r.id_usuario===selectedId));renderConversations()});
+ if(!list.some(r=>r.id_usuario===selectedId)) showConversation(list[0]);
+}
+
+function showConversation(r){
+ if(!r){els.chatTitle.textContent="Selecciona una conversación";els.chatSub.textContent="Aquí aparecerá el historial completo.";els.chatMessages.innerHTML='<div class="empty">Selecciona una persona.</div>';els.chatLevel.textContent="—";els.chatProduct.textContent="—";els.chatAmount.textContent="—";els.chatCount.textContent="—";return}
+ els.chatTitle.textContent=r.nombre||"Sin nombre";els.chatSub.textContent=(r.plataforma||"")+" · "+(r.id_usuario||"");
+ const hist=Array.isArray(r.historial)?r.historial:[];
+ els.chatMessages.innerHTML=hist.length?hist.map(m=>`<div class="msg-row ${m.tipo==="usuario"?"in":"out"}"><div class="bubble-wrap"><div class="bubble">${escapeHtml(m.mensaje||"")}</div><div class="msg-meta">${m.tipo==="usuario"?"Cliente":"Bot"} · ${escapeHtml(fmtDate(m.fecha))}</div></div></div>`).join(""):'<div class="empty">No hay historial almacenado para este registro.</div>';
+ els.chatMessages.scrollTop=els.chatMessages.scrollHeight;els.chatLevel.textContent=levelLabel(r.nivel_actual);els.chatProduct.textContent=r.plataforma_interes||"—";els.chatAmount.textContent=money(r.monto_estimado);els.chatCount.textContent=Number(r.total_mensajes||hist.length);
+}
+
+function leadState(r){
+ if(r.lead_estado)return r.lead_estado;
+ const n=Number(r.nivel_actual);if(n===4)return"avanzado";if(n>=2)return"seguimiento";return"nuevo";
+}
+function leadLabel(s){return({nuevo:"Nuevo",seguimiento:"En seguimiento",avanzado:"Lead avanzado",cerrado:"Cerrado"}[s]||s)}
+function renderLeads(){
+ const f=els.leadFilter.value;
+ const list=records.filter(r=>f==="all"||leadState(r)===f);
+ if(!list.length){els.leadRows.innerHTML='<tr><td colspan="8" class="empty">No hay leads para este filtro.</td></tr>';return}
+ els.leadRows.innerHTML=list.map(r=>{const st=leadState(r);return `<tr class="${selectedId===r.id_usuario?"selected":""}" data-id="${escapeHtml(r.id_usuario)}"><td><b>${escapeHtml(r.nombre||"Sin nombre")}</b></td><td>${escapeHtml(r.plataforma||"—")}</td><td><span class="lead-pill lead-${st}">${escapeHtml(leadLabel(st))}</span></td><td>${escapeHtml(levelLabel(r.nivel_actual))}</td><td>${escapeHtml(r.plataforma_interes||"—")}</td><td>${money(r.monto_estimado)}</td><td>${escapeHtml(fmtDate(r.ultima_interaccion))}</td><td><button type="button" class="nav-btn" style="display:inline-block;width:auto;margin:0;padding:7px 9px" data-open="${escapeHtml(r.id_usuario)}">Ver conversación</button></td></tr>`}).join("");
+ els.leadRows.querySelectorAll("tr[data-id]").forEach(tr=>tr.addEventListener("click",e=>{if(e.target.dataset.open)return;selectedId=tr.dataset.id;showDetail(records.find(r=>r.id_usuario===selectedId));renderLeads()}));
+ els.leadRows.querySelectorAll("button[data-open]").forEach(btn=>btn.onclick=()=>{selectedId=btn.dataset.open;showConversation(records.find(r=>r.id_usuario===selectedId));showDetail(records.find(r=>r.id_usuario===selectedId));switchPage("conversations")});
+}
+
+function switchPage(name){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$("page-"+name).classList.add("active");
+ document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+ if(name==="bank")renderBank();if(name==="conversations"){renderConversations();const r=records.find(x=>x.id_usuario===selectedId);showConversation(r)}if(name==="leads")renderLeads();
+}
+
+async function refreshBank(){els.refresh.disabled=true;els.refresh.textContent="Actualizando…";try{records=await loadRecords();if(selectedId&&!records.some(r=>r.id_usuario===selectedId))selectedId=null;renderBank();renderConversations();renderLeads();if(selectedId){const r=records.find(x=>x.id_usuario===selectedId);showDetail(r);showConversation(r)}}catch(e){els.statusText.textContent="Backend no disponible";els.statusDot.style.background="#ef4444"}finally{els.refresh.disabled=false;els.refresh.textContent="Actualizar banco"}}
+
+function hardResetBotFlow(){
+  const message = "Se borrarán TODOS los datos guardados en este navegador para BotFlow, incluyendo registros, conversaciones y leads.\n\n¿Continuar?";
+  if(!window.confirm(message)) return;
+
+  // Borrado duro del almacenamiento usado por BotFlow.
+  try {
+    const keysToDelete=[];
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(key && /^botflow/i.test(key)) keysToDelete.push(key);
+    }
+    for(const key of keysToDelete) localStorage.removeItem(key);
+  } catch(e) {}
+
+  try { sessionStorage.clear(); } catch(e) {}
+
+  // Limpiar estado en memoria y UI inmediatamente.
+  records=[];
+  selectedId=null;
+  showDetail(null);
+  showConversation(null);
+  renderBank();
+  renderConversations();
+  renderLeads();
+
+  // Marca de reinicio para evitar que alguna versión anterior vuelva a sembrar datos.
+  try { localStorage.setItem("BOTFLOW_EMPTY_AFTER_RESET","1"); } catch(e) {}
+
+  els.statusText.textContent="Banco vacío — todo borrado";
+  els.statusDot.style.background="#ef4444";
+
+  // Recarga final para garantizar que no quede estado de versiones anteriores.
+  setTimeout(()=>location.reload(),50);
+}
+
+window.hardResetBotFlow=hardResetBotFlow;
+const resetBtn=document.getElementById("resetAll");
+if(resetBtn){
+  resetBtn.type="button";
+  resetBtn.addEventListener("click",hardResetBotFlow);
+}
+
+document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.addEventListener("click",()=>switchPage(b.dataset.page)));
+els.bankSearch.addEventListener("input",renderBank);els.bankLevel.addEventListener("change",renderBank);els.conversationSearch.addEventListener("input",renderConversations);els.leadFilter.addEventListener("change",renderLeads);els.refresh.addEventListener("click",refreshBank);
+refreshBank();
+
+/*
+PRODUCCIÓN
+---------
+GET /api/conversaciones -> registros con historial.
+Cada registro debe incluir historial: [{tipo:"usuario"|"bot", mensaje, fecha}].
+El webhook de Meta recibe mensajes; el Bot Engine actualiza el registro y guarda cada mensaje.
+El HTML solo consulta la API: no recibe tokens de Meta ni funciona como webhook.
+*/
+</script>
+</body>
+</html>
